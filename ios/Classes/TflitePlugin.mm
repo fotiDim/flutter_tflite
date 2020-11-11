@@ -18,7 +18,8 @@
 #include "tensorflow/contrib/lite/op_resolver.h"
 #elif defined TFLITE2
 #import "TensorFlowLiteC.h"
-#import "metal_delegate.h"
+#import <TensorFlowLiteCCoreML/TensorFlowLiteCCoreML.h>
+//#include "tensorflow/lite/experimental/delegates/coreml/coreml_delegate.h"
 #else
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model.h"
@@ -163,9 +164,10 @@ NSString* loadModel(NSObject<FlutterPluginRegistrar>* _registrar, NSDictionary* 
   
   bool useGpuDelegate = [args[@"useGpuDelegate"] boolValue];
   if (useGpuDelegate) {
-    delegate = TFLGpuDelegateCreate(nullptr);
+    delegate = TfLiteCoreMlDelegateCreate(nullptr);
     TfLiteInterpreterOptionsAddDelegate(options, delegate);
   }
+  TfLiteInterpreterOptionsDelete(options);
 #else
   model = tflite::FlatBufferModel::BuildFromFile([graph_path UTF8String]);
   if (!model) {
@@ -1489,7 +1491,8 @@ void close() {
 #ifdef TFLITE2
   interpreter = nullptr;
   if (delegate != nullptr)
-    TFLGpuDelegateDelete(delegate);
+//    TFLGpuDelegateDelete(delegate);
+      TfLiteCoreMlDelegateDelete(delegate);
   delegate = nullptr;
 #else
   interpreter.release();
@@ -1498,4 +1501,3 @@ void close() {
   model = NULL;
   labels.clear();
 }
-
